@@ -11,7 +11,7 @@ import configparser
 from rich import print
 from httpx import Client
 from app.common import providers_pattern, sheetType
-from app.scrape.cli import getId
+from app.txt.cli import getId
 from app.setup.utils import config_file
 
 # global output_dir

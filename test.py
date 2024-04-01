@@ -1,27 +1,42 @@
-from json import loads
-import os
+def read_mapping(sitename: str, swap: bool = False) -> dict:
+    ecom = {
+        "S.No.": "sl",
+        "Image": "image",
+        "URL": "url",
+        "Title": "title",
+        "MRP": "mrp",
+        "Price": "price",
+        "Discount Percentage": "discount",
+        "Rating": "productRating",
+        "Seller Rating": "sellerRating",
+        "UserName": "sellerName",
+        "Number of Ratings": "totalRating",
+        "Number of Reviews": "totalReview",
+        "PID": "pid",
+        "LID": "lid",
+        "Flipkart Assured": "flipkarAssured",
+    }
 
-output_dir = "dumps/d1677a86-5917-5759-8991-6a8669f5d469/meesho"
+    social = {
+        "S.No.": "sl",
+        "Image": "image",
+        "Heading": "description",
+        "URL": "url",
+    }
 
-ids = []
-for root, dirs, files in os.walk(output_dir):
-    if root.startswith(("images")):
-        continue
-    for file in files:
-        if file.startswith("converted"):
-            continue
-        if file.endswith(".json"):
-            with open(os.path.join(root, file), "r") as f:
-                data = loads(f.read())
-                if (
-                    data["title"]
-                    in [
-                        "0",
-                        # "Not Enough Ratings",
-                        # "(New Seller)",
-                    ]
-                    and data["price"] == "0"
-                ):
-                    os.remove(os.path.join(root, file))
-                    print(file)
-            # ids.append(int(os.path.basename(file).split(".")[0]))
+
+    match sitename:
+        case "ecom":
+            if swap:
+                return {ecom[key]: key for key in ecom}
+
+            return ecom
+
+        case "social":
+            if swap:
+                return {social[key]: key for key in social}
+            return social
+
+
+
+print(read_mapping('social', True)) 

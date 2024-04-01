@@ -6,7 +6,7 @@ import sys
 
 from httpx import request
 
-from app.update.main import read_mapping
+from app.xlsx.main import read_mapping
 
 sys.path.append(os.curdir)
 
@@ -72,7 +72,7 @@ def scrape_from_file(
     overwrite: Annotated[bool, typer.Option(help="overwrite existing data")] = False,
     skip_images: Annotated[bool, typer.Option(help="skip saving images")] = False,
 ):
-    from app.scrape.cli import main
+    from app.txt.cli import main
 
     print("Scraping...")
     print(f"Urls file: {urls_file}")
@@ -199,7 +199,7 @@ def scrape_from_sheet(
     overwrite: Annotated[bool, typer.Option(help="overwrite existing data")] = False,
     skip_images: Annotated[bool, typer.Option(help="skip saving images")] = False,
 ):
-    from app.update.main import main
+    from app.xlsx.main import main
 
     print(f"[bold]Updating sheet from {input_path}[/]")
     print(f"Number of workers: {max_workers}")

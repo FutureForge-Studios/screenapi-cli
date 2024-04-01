@@ -20,7 +20,7 @@ config.read(config_file())
 OUTPUT_DIR: Path = None
 
 
-def read_mapping(sitename: sheetType, swap: bool = False) -> dict:
+def read_mapping(sitename: str, swap: bool = False) -> dict:
     ecom = {
         "S.No.": "sl",
         "Image": "image",
@@ -46,16 +46,17 @@ def read_mapping(sitename: sheetType, swap: bool = False) -> dict:
         "URL": "url",
     }
 
+
     match sitename:
         case "ecom":
             if swap:
-                return {value: key for key, value in ecom}
+                return {ecom[key]: key for key in ecom}
 
             return ecom
 
         case "social":
             if swap:
-                return {value: key for key, value in social}
+                return {social[key]: key for key in social}
             return social
 
 

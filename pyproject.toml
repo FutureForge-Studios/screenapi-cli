@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "screenapi-cli"
-version = "0.1.4"
+version = "0.1.5a"
 description = "A cli interface to interact with screenapi"
 authors = ["RONY <iamrony777@pm.me>"]
 license = "MIT"
@@ -10,8 +10,8 @@ packages = [
 ]
 
 [project.urls]
-Homepage = "https://ffstudios.io"
-Repository = "https://github.com/FutureForge-Studios/screenapi-cli.git"
+homepage = "https://ffstudios.io"
+repository = "https://github.com/FutureForge-Studios/screenapi-cli.git"
 
 [tool.poetry.scripts]
 screenapi-cli = "app.__main__:app"

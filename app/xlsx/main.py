@@ -46,7 +46,6 @@ def read_mapping(sitename: str, swap: bool = False) -> dict:
         "URL": "url",
     }
 
-
     match sitename:
         case "ecom":
             if swap:
@@ -219,12 +218,12 @@ def request(options: dict[str, Any]):
             if key in data:
                 data[key] = value
 
-            if key == "description":
-                data[key] = (
-                    jsonResponse.get("title")
-                    if jsonResponse.get("description") == "0"
-                    else jsonResponse.get("description")
-                )
+            # if key == "description":
+            #     data[key] = (
+            #         jsonResponse.get("title")
+            #         if jsonResponse.get("description") == "0"
+            #         else jsonResponse.get("description")
+            #     )
 
         with open(output_filename, "w") as file:
             json.dump(data, file, indent=2)
@@ -307,9 +306,18 @@ def main(
     print("Moving files!")
 
     if not skip_images:
-        shutil.move(
+        # print(
+        #     {
+        #         "source": os.path.join(output_dir, "images"),
+        #         "dest": os.path.join(
+        #             Path(input_path).parent, Path(input_path).stem, "images"
+        #         ),
+        #     }
+        # )
+        shutil.copytree(
             os.path.join(output_dir, "images"),
             os.path.join(Path(input_path).parent, Path(input_path).stem, "images"),
+            dirs_exist_ok=True
         )
 
     shutil.move(

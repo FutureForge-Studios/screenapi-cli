@@ -194,7 +194,7 @@ def scrape_from_sheet(
         typer.Option("--output-dir", "--output", "-o", help="output directory path"),
     ] = None,
     max_workers: Annotated[
-        int, typer.Option("-w", help="number of workers")
+        int, typer.Option("--max-workers", "-w", help="number of workers")
     ] = configGet("default", "max_workers"),
     overwrite: Annotated[bool, typer.Option(help="overwrite existing data")] = False,
     skip_images: Annotated[bool, typer.Option(help="skip saving images")] = False,

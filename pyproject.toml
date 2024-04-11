@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "screenapi-cli"
-version = "0.1.5a1"
+version = "0.1.5a2"
 description = "A cli interface to interact with screenapi"
 authors = ["RONY <iamrony777@pm.me>"]
 license = "MIT"
@@ -23,6 +23,7 @@ pandas = "^2.2.1"
 httpx = {extras = ["http2"], version = "^0.27.0"}
 typer = {extras = ["all"], version = "^0.10.0"}
 openpyxl = "^3.1.2"
+python-calamine = "^0.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

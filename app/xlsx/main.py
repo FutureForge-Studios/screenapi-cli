@@ -10,6 +10,7 @@ import pandas
 import configparser
 from rich import print
 from httpx import Client
+from difflib import SequenceMatcher
 from app.common import providers_pattern, sheetType
 from app.txt.cli import getId
 from app.setup.utils import config_file
@@ -64,6 +65,16 @@ def convert_to_json(input_path: Path, site: sheetType, save: Optional[bool] = Tr
 
     # read excel, rename column, fix date
     df = pandas.read_excel(input_path)
+    # serialNumberCell = df.columns[0]
+    firstColumnMatchRatio = SequenceMatcher(
+        a="S.No.", b=df.columns[0]
+    ).real_quick_ratio()
+
+    # print({ "firstColumnMatchRatio": firstColumnMatchRatio })
+    if firstColumnMatchRatio > 0.7 and firstColumnMatchRatio != 1.0:
+        print("[dim]`S.No.` column is probably in wrong format, fixing..[/]")
+        df.rename(columns={df.columns[0]: "S.No."}, inplace=True)
+
     df.rename(columns=read_mapping(site.value), inplace=True)
 
     if not df["Date Added"].isna().all():
@@ -317,7 +328,7 @@ def main(
         shutil.copytree(
             os.path.join(output_dir, "images"),
             os.path.join(Path(input_path).parent, Path(input_path).stem, "images"),
-            dirs_exist_ok=True
+            dirs_exist_ok=True,
         )
 
     shutil.move(
@@ -332,10 +343,9 @@ def main(
     print("Done!")
 
 
-# if __name__ == "__main__":
-#     main(
-#         input_path=Path("./dumps/Lakme Eyeconic 18-03-2024.xlsx"),
-#         site=[sheetType.meesho, sheetType.flipkart],
-#         max_workers=3,
-#         save=True,
-#     )
+if __name__ == "__main__":
+    convert_to_json(
+        input_path=Path("/home/rony/Downloads/Elle 18 09-04-2024_Shreya Jain.xlsx"),
+        site=sheetType.ecom,
+        save=True,
+    )

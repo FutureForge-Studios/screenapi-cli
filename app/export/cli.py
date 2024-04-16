@@ -27,11 +27,14 @@ def main(input_dir: str, output: str, sort_by: str):
 
     with Progress() as progress:
         task = progress.add_task("Processing JSON file", total=len(json_files))
-        for file_name in json_files:
+        for index, file_name in enumerate(json_files, start=1):
             file_path = os.path.join(input_dir, file_name)
             df = process_and_append_data(file_path, df)
+            # Calculate the percentage and update the task description
+            percentage = (index / len(json_files)) * 100
             progress.update(
                 task,
+                description=f"Processing JSON file {index}/{len(json_files)} ({percentage:.2f}%)",
                 advance=1,
             )
 

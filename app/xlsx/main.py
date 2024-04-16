@@ -176,7 +176,18 @@ def doneIds(output_dir: str):
             if file.startswith("converted"):
                 continue
             if file.endswith(".json"):
-                ids.append(int(os.path.basename(file).split(".")[0]))
+                with open(os.path.join(root, file)) as _f:
+                    d = json.loads(_f.read())
+                    try:
+                        if d.get("title") in ["", "0"] or d.get("description") in [
+                            "",
+                            "0",
+                        ]:
+                            os.remove(os.path.join(root, file))
+                        else:
+                            ids.append(int(os.path.basename(file).split(".")[0]))
+                    except Exception as e:
+                        print(e)
 
     print("Already done: ", len(ids))
     return ids
@@ -226,15 +237,14 @@ def request(options: dict[str, Any]):
 
     try:
         for key, value in jsonResponse.items():
-            if key in data:
-                data[key] = value
+            if key == "username" or key == "description" or key == "title":
+                if jsonResponse[key] not in ["", "0"]:
+                    data["description"] = jsonResponse[key]
 
-            # if key == "description":
-            #     data[key] = (
-            #         jsonResponse.get("title")
-            #         if jsonResponse.get("description") == "0"
-            #         else jsonResponse.get("description")
-            #     )
+            if key in data:
+                if key == "description":
+                    continue
+                data[key] = value
 
         with open(output_filename, "w") as file:
             json.dump(data, file, indent=2)
@@ -248,7 +258,7 @@ def main(
     input_path: Path,
     site: sheetType,
     output_dir: Optional[Path] = None,
-    # save: Optional[bool] = True,
+    save: Optional[bool] = True,
     max_workers: Optional[int] = config.get("default", "max_workers"),
     overwrite: Optional[bool] = False,
     skip_images: Optional[bool] = False,
@@ -344,8 +354,11 @@ def main(
 
 
 if __name__ == "__main__":
-    convert_to_json(
-        input_path=Path("/home/rony/Downloads/Elle 18 09-04-2024_Shreya Jain.xlsx"),
-        site=sheetType.ecom,
+    main(
+        input_path=Path("dumps/goibibo.xlsx"),
+        site=sheetType.social,
         save=True,
+        overwrite=True,
+        skip_images=True,
+        max_workers=5,
     )

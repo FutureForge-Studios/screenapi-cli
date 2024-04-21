@@ -198,6 +198,7 @@ def scrape_from_sheet(
     ] = configGet("default", "max_workers"),
     overwrite: Annotated[bool, typer.Option(help="overwrite existing data")] = False,
     skip_images: Annotated[bool, typer.Option(help="skip saving images")] = False,
+    check: Annotated[str, typer.Option(help="Check for `x` key while checking already parsed data")] = None
 ):
     from app.xlsx.main import main
 
@@ -213,6 +214,7 @@ def scrape_from_sheet(
         output_dir=output_dir,
         overwrite=overwrite,
         skip_images=skip_images,
+        check=check
     )
 
 

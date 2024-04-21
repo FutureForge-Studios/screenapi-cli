@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "screenapi-cli"
-version = "0.1.5a3"
+version = "0.1.5a4"
 description = "A cli interface to interact with screenapi"
 authors = ["RONY <iamrony777@pm.me>"]
 license = "MIT"

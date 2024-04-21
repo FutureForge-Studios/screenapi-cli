@@ -1,46 +1,79 @@
-# data = {
-#     "S.No.": "sl",
-#     "Image": "image",
-#     "Heading": "description",
-#     "URL": "url",
-# }
+from difflib import SequenceMatcher
+import json
+import re
+import pandas
 
-data = {
-  "sl": 48,
-  "image": "48.0.png",
-  "Platform": "www.twitter.com",
-  "description": "0",
-  "url": "https://twitter.com/goibibo_tpt",
-  "Date Added": 0,
-  "Priority": "Low",
-  "Status": 33,
-  "key": "twitter",
-  "endpoint": "/twitter",
-  "type": None
+PROVIDERS = {
+    "glowroad": "/glowroad",
+    "tradeindia": "/tradeindia",
+    "quora": "/quora",
+    "pinterest": "/pinterest",
+    "youtube": "/youtube",
+    "alibaba": "/alibaba",
+    "indiemart": "/indiemart",
+    "amazon": "/amazon",
+    "telegram": "/telegram",
+    "t.me": "/telegram",
+    "kooapp": "/kooapp",
+    "snapdeal": "/snapdeal",
+    "exportersindia": "/exportersindia",
+    "shopclues": "/shopclues",
+    "gethuman": "/gethuman",
+    "reddit": "/reddit",
+    "meesho": "/meesho",
+    "twitter": "/twitter",
+    "facebook": "/facebook",
+    "flipkart": "/flipkart",
+    "shopsy": "/shopsy",
+    "instagram": "/instagram",
+    "linkedin": "/linkedin",
 }
-response = {
-  "id": "66ef19b4-5bad-5926-8ba8-0b6c4e23f99c",
-  "url": "https://twitter.com/goibibo_tpt",
-  "image": "/images/66ef19b4-5bad-5926-8ba8-0b6c4e23f99c.png",
-  "title": "goibibo_tpt",
-  "username": "",
-  "description": "",
-  "isPost": 1
+
+providers_pattern = {re.compile(key): value for key, value in PROVIDERS.items()}
+
+df = pandas.read_excel("/home/rony/Projects/screenapi-cli/dumps/shopsy10k.xlsx")
+firstColumnMatchRatio = SequenceMatcher(a="S.No.", b=df.columns[0]).real_quick_ratio()
+
+# print({ "firstColumnMatchRatio": firstColumnMatchRatio })
+if firstColumnMatchRatio > 0.7 and firstColumnMatchRatio != 1.0:
+    print("[dim]`S.No.` column is probably in wrong format, fixing..[/]")
+    df.rename(columns={df.columns[0]: "S.No."}, inplace=True)
+
+ecom = {
+    "S.No.": "sl",
+    "Image": "image",
+    "URL": "url",
+    "Title": "title",
+    "MRP": "mrp",
+    "Price": "price",
+    "Discount Percentage": "discount",
+    "Rating": "productRating",
+    "Seller Rating": "sellerRating",
+    "UserName": "sellerName",
+    "Number of Ratings": "totalRating",
+    "Number of Reviews": "totalReview",
+    "PID": "pid",
+    "LID": "lid",
+    "Flipkart Assured": "flipkarAssured",
 }
 
-for key, value in response.items():
-    if key == "username":
-        data["description"] = response[key]
+df.rename(columns=ecom, inplace=True)
+if df["sl"].isnull().all():
+    sequence = range(1, len(df) + 1)
+    df["sl"] = sequence
 
-    if key in data:
-        if key == "description" and data.get("description") in ["", "0", None]:
-            data[key] = [
-                response.get("title")
-                if response.get("description") == "0"
-                or response.get("description") == ""
-                else response.get("description")
-            ][0]
-        else:
-            data[key] = value
+df.fillna("0", inplace=True)
 
-print(data)
+jsonData = df.to_dict(orient="records")
+for data in jsonData:
+    for regex, endpoint in providers_pattern.items():
+        if regex.search(data["url"]):
+            data.update(
+                {
+                    "key": regex.pattern,
+                    "endpoint": endpoint,
+                    "type": None,
+                }
+            )
+            with open(f"dumps/shopsy10k/{data['sl']}.json", "w") as _f:
+                _f.write(json.dumps(data))

@@ -167,7 +167,7 @@ def convert_to_xlsx(
     df.to_excel(output_file, index=False)
 
 
-def doneIds(output_dir: str):
+def doneIds(output_dir: str, check: Optional[str] = None):
     ids = []
     for root, dirs, files in os.walk(output_dir):
         if root.startswith(("images")):
@@ -179,6 +179,10 @@ def doneIds(output_dir: str):
                 with open(os.path.join(root, file)) as _f:
                     d = json.loads(_f.read())
                     try:
+                        if check:
+                            if d.get(check) in ["", "0", None]:
+                                os.remove(os.path.join(root, file))
+
                         if d.get("title") in ["", "0"] or d.get("description") in [
                             "",
                             "0",
@@ -186,6 +190,8 @@ def doneIds(output_dir: str):
                             os.remove(os.path.join(root, file))
                         else:
                             ids.append(int(os.path.basename(file).split(".")[0]))
+                    except FileNotFoundError:
+                        continue
                     except Exception as e:
                         print(e)
 
@@ -214,6 +220,7 @@ def request(options: dict[str, Any]):
         # exit(1)
 
     jsonResponse: dict[str, str] = response.json()
+    # print(jsonResponse)
 
     if "image" in jsonResponse and not skipImages:
         with open(
@@ -237,14 +244,14 @@ def request(options: dict[str, Any]):
 
     try:
         for key, value in jsonResponse.items():
-            if key == "username" or key == "description" or key == "title":
-                if jsonResponse[key] not in ["", "0"]:
-                    data["description"] = jsonResponse[key]
-
-            if key in data:
-                if key == "description":
-                    continue
+            if key in data and key != "description":
                 data[key] = value
+
+            if key in ["title", "username", "description"]:
+                if "description" in data and data["description"] not in ["", "0"]:
+                    continue
+                if key in jsonResponse and jsonResponse[key] not in ["", "0"]:
+                    data["description"] = jsonResponse[key]
 
         with open(output_filename, "w") as file:
             json.dump(data, file, indent=2)
@@ -262,6 +269,7 @@ def main(
     max_workers: Optional[int] = config.get("default", "max_workers"),
     overwrite: Optional[bool] = False,
     skip_images: Optional[bool] = False,
+    check: Optional[str] = None,
 ):
     global OUTPUT_DIR
     if output_dir is None:
@@ -282,7 +290,7 @@ def main(
     original_length = len(data)
 
     if not overwrite:
-        done_already = doneIds(output_dir)
+        done_already = doneIds(output_dir, check)
     else:
         done_already = []
     data = [i for i in data if i["sl"] not in done_already]
@@ -355,7 +363,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        input_path=Path("dumps/goibibo.xlsx"),
+        input_path=Path("dumps/Redbus_SM_4thApril (1).xlsx"),
         site=sheetType.social,
         save=True,
         overwrite=True,

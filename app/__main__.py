@@ -206,6 +206,7 @@ def scrape_from_sheet(
     print(f"Number of workers: {max_workers}")
     print(f"Overwrite existing data: {overwrite}")
     print(f"Skip saving images: {skip_images}")
+    print(f"Check for `{check}` while checking already parsed data: {check}" if check else "")
 
     main(
         input_path=input_path,

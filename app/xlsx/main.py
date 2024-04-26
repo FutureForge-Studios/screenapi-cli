@@ -123,11 +123,11 @@ def convert_to_json(input_path: Path, site: sheetType, save: Optional[bool] = Tr
     #     return jsonData
 
     if save:
-        with open(os.path.join(OUTPUT_DIR, "converted.json"), "w") as f:
+        with open(os.path.join(OUTPUT_DIR, "dump"), "w") as f:
             f.write(json.dumps(jsonData, indent=4))
         print(
             "[bold]Converted to json, Saved to: ",
-            os.path.join(OUTPUT_DIR, "converted.json"),
+            os.path.join(OUTPUT_DIR, "dump"),
         )
     return jsonData
 
@@ -159,44 +159,39 @@ def convert_to_xlsx(
             if file.endswith(".json"):
                 df = process_and_append_data(os.path.join(root, file), df)
 
-    df.drop(columns=["key", "endpoint", "type"], inplace=True)
     df.sort_values(by=sort_by, inplace=True)
-
+    df.drop(columns=["key", "endpoint", "type", "description"], inplace=True)
     df.rename(columns=read_mapping(site.value, swap=True), inplace=True)
-
     df.to_excel(output_file, index=False)
 
 
 def doneIds(output_dir: str, check: Optional[str] = None):
-    ids = []
-    for root, dirs, files in os.walk(output_dir):
-        if root.startswith(("images")):
+    ids = set()
+    ids_to_remove = set()
+    for root, _, files in os.walk(output_dir):
+        if "images" in root.split(os.sep):
             continue
-        for file in files:
-            if file.startswith("converted"):
-                continue
-            if file.endswith(".json"):
-                with open(os.path.join(root, file)) as _f:
-                    d = json.loads(_f.read())
-                    try:
-                        if check:
-                            if d.get(check) in ["", "0", None]:
-                                os.remove(os.path.join(root, file))
+        for file in filter(lambda x: x.endswith(".json"), files):
+            with open(os.path.join(root, file)) as f:
+                d = json.load(f)
+                if check:
+                    if (
+                        d.get("title") in ["", "0"]
+                        or d.get("description") in ["", "0"]
+                        or d.get(check) in ["", "0"]
+                    ):
+                        ids_to_remove.add(os.path.join(root, file))
+                    else:
+                        ids.add(int(os.path.basename(file).split(".")[0]))
+                else:
+                    if d.get("title") in ["", "0"] or d.get("description") in ["", "0"]:
+                        ids_to_remove.add(os.path.join(root, file))
+                    else:
+                        ids.add(int(os.path.basename(file).split(".")[0]))
 
-                        if d.get("title") in ["", "0"] or d.get("description") in [
-                            "",
-                            "0",
-                        ]:
-                            os.remove(os.path.join(root, file))
-                        else:
-                            ids.append(int(os.path.basename(file).split(".")[0]))
-                    except FileNotFoundError:
-                        continue
-                    except Exception as e:
-                        print(e)
-
-    print("Already done: ", len(ids))
-    return ids
+    [os.remove(i) for i in ids_to_remove]
+    print(f"Total: {len(ids)}")
+    return list(ids)
 
 
 def request(options: dict[str, Any]):
@@ -363,10 +358,11 @@ def main(
 
 if __name__ == "__main__":
     main(
-        input_path=Path("dumps/Redbus_SM_4thApril (1).xlsx"),
-        site=sheetType.social,
+        input_path=Path("dumps/15APR_MZ_PAYALTEAM.xlsx"),
+        site=sheetType.ecom,
         save=True,
-        overwrite=True,
-        skip_images=True,
+        overwrite=False,
+        skip_images=False,
         max_workers=5,
+        check="sellerName",
     )
